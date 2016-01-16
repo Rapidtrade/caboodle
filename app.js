@@ -20,9 +20,12 @@ angular.module('caboodle').controller('caMap',['$scope','$http',function($scope,
     var map;
     var bounds = new google.maps.LatLngBounds();
 
-    $("#nav-icon").click(function(e){
+    $("#nav-icon, #nav-backbox").click(function(e){
         $('.nav').toggleClass('nav-show');
         $('.nav').toggleClass('nav-hide');
+        $('#nav-backbox').toggleClass('nav-backbox-hide ');
+        $('#nav-backbox').toggleClass('nav-backbox-show ');
+
     });
 
     function getData(){
