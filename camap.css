@@ -52,6 +52,24 @@ body {
     left:0;
 }
 
+#nav-heading {
+    height: 50px;
+    border-bottom: 1px solid #777;
+}
+
+#nav-heading h1 {
+    padding: 0px;
+    margin : 0;
+    color: #777;
+    font-family: 'Josefin Slab', serif;
+    text-align: center;
+    line-height: 50px;
+}
+
+#nav-content {
+    height: 500px;
+    border-bottom: 1px solid #777;
+}
 
 #map {
     width: 100%;
