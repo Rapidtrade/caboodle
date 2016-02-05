@@ -1,4 +1,4 @@
-angular.module('caboodle',['ngRoute']).config(function($routeProvider,$httpProvider){
+angular.module('caboodle',['ngRoute','mgcrea.ngStrap','ngAnimate']).config(function($routeProvider,$httpProvider){
     $httpProvider.defaults.headers.post = {};
     $httpProvider.defaults.headers.put = {};
     $httpProvider.defaults.headers.patch = {};
@@ -12,13 +12,14 @@ angular.module('caboodle',['ngRoute']).config(function($routeProvider,$httpProvi
     $routeProvider.otherwise('/camap');
 });
 
-angular.module('caboodle').controller('caMap',['$scope','$http',function($scope,$http){
+angular.module('caboodle').controller('caMap',['$scope','$http','$modal',function($scope,$http,$modal){
 
     var Base64={_keyStr:"ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/=",encode:function(e){var t="";var n,r,i,s,o,u,a;var f=0;e=Base64._utf8_encode(e);while(f<e.length){n=e.charCodeAt(f++);r=e.charCodeAt(f++);i=e.charCodeAt(f++);s=n>>2;o=(n&3)<<4|r>>4;u=(r&15)<<2|i>>6;a=i&63;if(isNaN(r)){u=a=64}else if(isNaN(i)){a=64}t=t+this._keyStr.charAt(s)+this._keyStr.charAt(o)+this._keyStr.charAt(u)+this._keyStr.charAt(a)}return t},decode:function(e){var t="";var n,r,i;var s,o,u,a;var f=0;e=e.replace(/[^A-Za-z0-9\+\/\=]/g,"");while(f<e.length){s=this._keyStr.indexOf(e.charAt(f++));o=this._keyStr.indexOf(e.charAt(f++));u=this._keyStr.indexOf(e.charAt(f++));a=this._keyStr.indexOf(e.charAt(f++));n=s<<2|o>>4;r=(o&15)<<4|u>>2;i=(u&3)<<6|a;t=t+String.fromCharCode(n);if(u!=64){t=t+String.fromCharCode(r)}if(a!=64){t=t+String.fromCharCode(i)}}t=Base64._utf8_decode(t);return t},_utf8_encode:function(e){e=e.replace(/\r\n/g,"\n");var t="";for(var n=0;n<e.length;n++){var r=e.charCodeAt(n);if(r<128){t+=String.fromCharCode(r)}else if(r>127&&r<2048){t+=String.fromCharCode(r>>6|192);t+=String.fromCharCode(r&63|128)}else{t+=String.fromCharCode(r>>12|224);t+=String.fromCharCode(r>>6&63|128);t+=String.fromCharCode(r&63|128)}}return t},_utf8_decode:function(e){var t="";var n=0;var r=c1=c2=0;while(n<e.length){r=e.charCodeAt(n);if(r<128){t+=String.fromCharCode(r);n++}else if(r>191&&r<224){c2=e.charCodeAt(n+1);t+=String.fromCharCode((r&31)<<6|c2&63);n+=2}else{c2=e.charCodeAt(n+1);c3=e.charCodeAt(n+2);t+=String.fromCharCode((r&15)<<12|(c2&63)<<6|c3&63);n+=3}}return t}}
     //var map_points = [{"Name":"WDS Groups","AccountID":1005061304539646,"Latitude":-26.251884124935,"Longitude":27.973657538468},{"Name":"Fasie Limited (Creative)","AccountID":1005061848543519,"Latitude":-29.825351959326,"Longitude":30.8310294509}];
     map_points = [];
     var map;
     var bounds = new google.maps.LatLngBounds();
+    $scope.keys = [];
     function toggleNavigation() {
         $('.nav').toggleClass('nav-show');
         $('.nav').toggleClass('nav-hide');
@@ -56,9 +57,14 @@ angular.module('caboodle').controller('caMap',['$scope','$http',function($scope,
         //addMarkers();
         initialize();
     }
+
     $scope.Query = function(Query){
         getData(Query);
         toggleNavigation();
+    }
+
+    $scope.RepChanged = function(){
+
     }
 
     function Cluster(data,keyfield){
@@ -78,17 +84,24 @@ angular.module('caboodle').controller('caMap',['$scope','$http',function($scope,
         }
         return cluster;
     }
-    
+
     function addClusteredMarkers(){
         // Loop through our array of markers & place each one on the map
         for( i = 0; i < map_points.length; i++ ) {
             var hex = genHex();
             var cluster = map_points[i];
-            console.log(map_points[i][0].RepName + " " + hex);
+            var rep = {};
+            rep.Name = map_points[i][0].RepName;
+            rep.Hex = hex;
+            rep.Show = true;
+            $scope.keys.push(rep);
+
+            //console.log(map_points[i][0].RepName + " " + hex);
             for(x = 0; x < cluster.length; x++){
 
-                var infoWindow = new google.maps.InfoWindow(), marker, n;
+                var infoWindow = new google.maps.InfoWindow(), marker, x;
                 var position = new google.maps.LatLng(cluster[x].Latitude, cluster[x].Longitude);
+
                 bounds.extend(position);
                 marker = new google.maps.Marker({
                     position: position,
@@ -106,18 +119,25 @@ angular.module('caboodle').controller('caMap',['$scope','$http',function($scope,
                     title: cluster[x].Name
                 });
 
-                //* Allow each marker to have an info window
-                google.maps.event.addListener(marker, 'click', (function(marker, n) {
-                    return function() {
-                        infoWindow.setContent(cluster[x].CustomerLocations_CONV_Customers_Name);
-                        infoWindow.open(map, marker);
-                    }
-                })(marker, n));
-
-                // Automatically center the map fitting all markers on the screen
+                attachInfo(marker,cluster[x].CustomerLocations_CONV_Customers_Name)
                 map.fitBounds(bounds);
             }
         }
+    }
+
+    function attachInfo(marker,info){
+        var infowindow = new google.maps.InfoWindow({
+            content: info
+        });
+
+        marker.addListener('click', function() {
+            infowindow.open(marker.get('map'), marker);
+        });
+    }
+
+    $scope.keysClicked = function(){
+        console.log($scope.keys);
+        var myOtherModal = $modal({scope: $scope, template: 'modals/keys.html'});
     }
 
     function addMarkers(){

@@ -4,13 +4,22 @@
         </div>
         <div id="nav-content">
             <ul>
-                <li><a href="" ng-click="Query('CustomerLocations')">All Customers</a></li>
+                <li ng-if="false"><a href="" ng-click="Query('CustomerLocations')">All Customers</a></li>
                 <li><a href="" ng-click="CustomerTotalPerRep()">Customer Totals Per Rep</a></li>
             </ul>
+            <div style="height: 500px; overflow : scroll">
+                <ul id="key-list">
+                    <li ng-repeat="key in keys">
+                        <i class="fa fa-map-pin" ng-style="{'color' : key.Hex}"></i><span>{{key.Name}}</span>
+                        <input ng-if="false" class="pull-right"  ng-checked="key.Show"  type="checkbox" name="{{key.Name}}">
+                    </li>
+                </ul>
+            </div>
         </div>
     </div>
 
     <div id="nav-backbox" class="nav-backbox-hide"></div>
    <div id="nav-icon"><i class="fa fa-bars"></i></div>
+   <!--<div id="keys-icon" ng-click="keysClicked()"><i class="fa fa-map-signs"></i><p style="display:inline">Keys</p></div>-->
    <div id="map"></div>
 </div>

@@ -1,0 +1,21 @@
+<div class="modal" tabindex="-1" role="dialog" aria-hidden="true">
+  <div class="modal-dialog">
+    <div class="modal-content">
+      <div class="modal-header" ng-show="title">
+        <button type="button" class="close" aria-label="Close" ng-click="$hide()"><span aria-hidden="true">&times;</span></button>
+        <h4 class="modal-title" ng-bind="title"></h4>
+      </div>
+      <div class="modal-body">
+            <ul id="key-list">
+                <li ng-repeat="key in keys">
+                    <i class="fa fa-map-pin" ng-style="{'color' : key.Hex}"></i><span>{{key.Name}}</span>
+                    <input class="pull-right" ng-hide="true"  ng-checked="key.Show" type="checkbox" name="{{key.Name}}">
+                </li>
+            </ul>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-default" ng-click="$hide()">Close</button>
+      </div>
+    </div>
+  </div>
+</div>
