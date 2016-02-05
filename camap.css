@@ -92,3 +92,27 @@ body {
     display: none;
     -webkit-transition : all 100ms;
 }
+
+#nav-content ul {
+    padding: 0px;
+}
+#nav-content ul li {
+    list-style: none;
+    padding: 5px;
+    margin-left: 30px;
+}
+
+
+#nav-content ul li a {
+    text-decoration: none;
+    color: #777;
+    font-family: sans-serif;
+    -webkit-transition : all 200ms;
+    -moz-transition : all 200ms;
+    -ie-transition : all 200ms;
+    transition : all 200ms;
+}
+
+#nav-content ul li a:hover{
+    color : #4183D7;
+}

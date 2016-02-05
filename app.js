@@ -19,26 +19,105 @@ angular.module('caboodle').controller('caMap',['$scope','$http',function($scope,
     map_points = [];
     var map;
     var bounds = new google.maps.LatLngBounds();
-
-    $("#nav-icon, #nav-backbox").click(function(e){
+    function toggleNavigation() {
         $('.nav').toggleClass('nav-show');
         $('.nav').toggleClass('nav-hide');
         $('#nav-backbox').toggleClass('nav-backbox-hide ');
         $('#nav-backbox').toggleClass('nav-backbox-show ');
+    }
 
+    $("#nav-icon, #nav-backbox").click(function(){
+        toggleNavigation()
     });
 
-    function getData(){
-        $http.defaults.headers.common['Authorization'] = 'Basic ' + Base64.encode('DEMO:DEMO');
-        var url = 'http://php.rapidtrade.biz/testrest/rapidapi/caboodle.php/Query?query=CustomerLocations';
+    function getData(Query,Success){
+        $http.defaults.headers.common['Authorization'] = 'Basic ' + Base64.encode('CONVDUMMY:PASSWORD');
+        var url = 'http://php.rapidtrade.biz/testrest/rapidapi/caboodle.php/Query?query='+Query;
+        //map_points = []
+        //addMarkers();
+        console.log(Query);
         $http({method: 'GET', url: url, withCredentials: true, username: 'DEMO', password: 'DEMO'})
         .success(function(data){
-            console.log(data);
-            map_points = data;
-            addMarkers();
+            if(Success) Success(data);
         }).error(function(error){
             console.log(error);
         })
+    }
+
+    $scope.CustomerTotalPerRep = function(){
+        getData('CustomerTotalPerRep',function(data){
+            map_points = Cluster(data,'RepCode');
+            addClusteredMarkers()
+            console.log(map_points);
+            toggleNavigation();
+        });
+
+        //map_points = []
+        //addMarkers();
+        initialize();
+    }
+    $scope.Query = function(Query){
+        getData(Query);
+        toggleNavigation();
+    }
+
+    function Cluster(data,keyfield){
+        var keyfieldMap = {};
+        var keyfieldEl = -1;
+        var cluster = [];
+        for(var i = 0; i < data.length; i++){
+            if(keyfieldMap[data[i][keyfield]] === undefined){
+                keyfieldEl++;
+                keyfieldMap[data[i][keyfield]] = keyfieldEl;
+                var newCluster = [];
+                newCluster.push(data[i]);
+                cluster.push(newCluster);
+            }else{
+                cluster[keyfieldMap[data[i][keyfield]]].push(data[i])
+            }
+        }
+        return cluster;
+    }
+    
+    function addClusteredMarkers(){
+        // Loop through our array of markers & place each one on the map
+        for( i = 0; i < map_points.length; i++ ) {
+            var hex = genHex();
+            var cluster = map_points[i];
+            console.log(map_points[i][0].RepName + " " + hex);
+            for(x = 0; x < cluster.length; x++){
+
+                var infoWindow = new google.maps.InfoWindow(), marker, n;
+                var position = new google.maps.LatLng(cluster[x].Latitude, cluster[x].Longitude);
+                bounds.extend(position);
+                marker = new google.maps.Marker({
+                    position: position,
+                    map: map,
+                    icon: {
+                      path: fontawesome.markers.MAP_PIN,
+                      scale: 0.4,
+                      strokeWeight: 0.0,
+                      strokeColor: 'black',
+                      strokeOpacity: 0,
+                      fillColor: hex,
+                      fillOpacity: 1
+                  },
+                    clickable: true,
+                    title: cluster[x].Name
+                });
+
+                //* Allow each marker to have an info window
+                google.maps.event.addListener(marker, 'click', (function(marker, n) {
+                    return function() {
+                        infoWindow.setContent(cluster[x].CustomerLocations_CONV_Customers_Name);
+                        infoWindow.open(map, marker);
+                    }
+                })(marker, n));
+
+                // Automatically center the map fitting all markers on the screen
+                map.fitBounds(bounds);
+            }
+        }
     }
 
     function addMarkers(){
@@ -46,7 +125,7 @@ angular.module('caboodle').controller('caMap',['$scope','$http',function($scope,
           for( i = 0; i < map_points.length; i++ ) {
               var infoWindow = new google.maps.InfoWindow(), marker, i;
               var position = new google.maps.LatLng(map_points[i].Latitude, map_points[i].Longitude);
-              console.log(position);
+              //console.log(position);
               bounds.extend(position);
               marker = new google.maps.Marker({
                   position: position,
@@ -73,12 +152,12 @@ angular.module('caboodle').controller('caMap',['$scope','$http',function($scope,
               })(marker, i));
 
               // Automatically center the map fitting all markers on the screen
-              //map.fitBounds(bounds);
+              map.fitBounds(bounds);
           }
     }
 
     function genHex() {
-        var hex = '#'+ Math.floor(Math.random()*16777215).toString(16);
+        var hex = '#'+ Math.floor(Math.random()*16778215).toString(16);
         return hex;
     }
 
@@ -99,7 +178,7 @@ angular.module('caboodle').controller('caMap',['$scope','$http',function($scope,
 
     function constructor() {
         //$http.defaults.headers.common['Authorization'] = 'Basic bGlsZ3JlZW46UEFTU1dPUkQ='; // + Base64.encode('lilgreen:PASSWORD');
-        getData();
+        //getData();
         initialize();
     }
 
